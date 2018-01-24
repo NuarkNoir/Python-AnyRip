@@ -12,7 +12,14 @@ global proxyurl
 proxyurl = ""
 
 def main():
-	parser = ReactorParser(input("Ok, give me your reaktor link:\n>>> ").strip())
+	url = input("Ok, give me your reaktor link:\n>>> ")
+	if len(url) < 10:
+		print("Wrong input [", url, "]")
+		main()
+	try:
+		parser = parser_controller(url)
+	except Exception as e:
+		exit("\n".join(e.args))
 	pz = input("Will we use proxy redirect[y/N]?:\n>>> ").strip().lower()
 	if pz == "y":
 		globals()["proxyurl"] = "http://nuark.xyz/proxy.php?h&l="
