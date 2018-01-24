@@ -36,6 +36,10 @@ class ReactorParser:
 		return self.links
 	
 	
+	def get_links_count(self):
+		return len(self.links)
+	
+	
 	def _check_url(self, url):
 		import re
 		if not re.match(self.checker_regexp, url):

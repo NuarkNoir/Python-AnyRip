@@ -12,7 +12,7 @@ global proxyurl
 proxyurl = ""
 
 def main():
-	url = input("Ok, give me your reaktor link:\n>>> ")
+	url = "https://kasidesi.deviantart.com/gallery/" #input("Ok, give me your reaktor link:\n>>> ")
 	if len(url) < 10:
 		print("Wrong input [", url, "]")
 		main()
@@ -32,7 +32,7 @@ def main():
 	except KeyboardInterrupt:
 		pass
 	links = parser.get_links()
-	print("Ok, we got", len(links), "links")
+	print("Ok, we got", parser.get_links_count(), "links")
 	act = input("What we have to do?\n[1]Nothing\n[2]Send to Yandex.Disk\n[3]Just download\n[4] Both 2 and 3\n>>> ")
 	if act == "2":
 		print("Sending links to Yandex.Disk...")
@@ -51,12 +51,6 @@ def main():
 			download_file(link)
 	else:
 		exit("Nothing? Ok.")
-        
-def sanatize_input(_file):
-    for line in _file:
-        line = line.strip()
-        if line:
-            yield line
 
 def send_to_yandex(url):
 	print("Sending", urlencode_str(url), "...")
