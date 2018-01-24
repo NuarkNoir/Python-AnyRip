@@ -15,7 +15,7 @@ class ReactorParser:
 		links_list = []
 		parse_page = url.split("/").pop().isdigit()
 		if not url.find("/post/") == -1:
-			raise Exception("Post parsing not implemented.")
+			links_list += self.parse_post(url)
 		elif parse_page:
 			links_list += self.parse_page(url)
 		else:
@@ -27,7 +27,7 @@ class ReactorParser:
 	def get_links(self):
 		l = []
 		for elfirst in self.links:
-			if "__iter__" in dir(elfirst):
+			if type(elfirst) == type([]):
 				for elsecond in elfirst:
 					l.append(elsecond)
 			else:
@@ -60,6 +60,22 @@ class ReactorParser:
 		pagenum = int(root.cssselect('div.pagination_expanded span.current')[0].text)
 		for i in range(pagenum, 0, -1):
 			yield self.parse_page(url + "/" + str(i))
+		
+		
+	def parse_post(self, url):
+		print("Parsing post with url:", url)
+		resp = requests.get(url)
+		root = lxml.html.fromstring(resp.text)
+		parsed_links = []
+		for img in root.cssselect(".post_content img"):
+			link = img.attrib['src']
+			if not "/post/" in link:
+				continue
+			if img.attrib['src'].find("/full/") == -1:
+				link = link.replace("post", "post/full")
+			parsed_links.append(link)
+		self.links += parsed_links
+		return parsed_links
 		
 
 	def _parse_html(self, html):

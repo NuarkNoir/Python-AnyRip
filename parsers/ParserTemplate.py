@@ -2,13 +2,28 @@ class NameOfParser:
 	host = ""
 	url_pattern = ""
 	checker_regexp = ""
+	links = []
 	
 	def __init__(self, url):
 		self.url = self._check_url(url)
 			
 		
 	def parse(self):
-		return []
+		url = self.url
+		links_list = []
+		return links_list
+	
+	
+	def get_links(self):
+		l = []
+		for elfirst in self.links:
+			if "__iter__" in dir(elfirst):
+				for elsecond in elfirst:
+					l.append(elsecond)
+			else:
+				l.append(elfirst)
+		self.links = l
+		return self.links
 	
 	
 	def _check_url(self, url):
