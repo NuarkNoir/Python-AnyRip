@@ -2,10 +2,9 @@ import requests, lxml.html
 
 class DeviantartParser:
 	host = "deviantart"
-	url_pattern = "[http[s]://]<author>.deviantart.com/gallery/"
+	url_pattern = "[http[s]://]<author>.deviantart.com/gallery/[?catpath=/|<nothing>]"
 	checker_regexp = "(.*?)(\.)(deviantart.com\/gallery\/)(.*)"
 	links = []
-	__so = "?offset="
 	
 	def __init__(self, url):
 		self.url = self._check_url(url)
@@ -15,9 +14,23 @@ class DeviantartParser:
 		
 	def parse(self):
 		url = self.url
+		if not url.endswith("?catpath=/"):
+			url += "?catpath=/"
 		links_list = []
+		
 
 		html = self.requestor.get(url).text
+		print(url)
+		offset = 0
+		while True:
+			print(offset, len(links_list))
+			album_page = self.requestor.get(url + "&offset=" + str(offset)).text
+			albums_images = self.get_albums_images(album_page)
+			if len(albums_images) == 0:
+				break
+			links_list += [image_link for image_link in albums_images]
+			offset += 24
+		""" This returns only links, that contains in Authors gallery. I just leve it here for next time, then I can realize, how can I use it.
 		for link in self.get_detail_pages(html):
 			print(link)
 			offset = 0
@@ -28,6 +41,7 @@ class DeviantartParser:
 					break
 				links_list += [image_link for image_link in albums_images]
 				offset += 24
+		"""
 
 		self.links = links_list
 		return links_list
@@ -61,8 +75,9 @@ class DeviantartParser:
 	def get_albums_images(self, source):
 		root = lxml.html.fromstring(source)
 		links = []
-		folderview_art = root.cssselect("div.folderview-art")[0]
-		for link in root.cssselect("span.thumb a.torpedo-thumb-link"):
+		#folderview_art = root.cssselect("div.folderview-art")[0] # For old parsing model
+		folderview_art = root.cssselect("div.torpedo-container")[0]
+		for link in root.cssselect("span[data-sigil=torpedo-thumb] a.torpedo-thumb-link"):
 			links.append(link.attrib["href"])
 		return links
 
@@ -81,8 +96,3 @@ class DeviantartParser:
 		except Exception as e:
 			print(e.args)
 			return prev_img
-		
-
-
-
-# https://www.deviantart.com/download/721057806/margarita_ferguson_by_kasidesi-dbxarri.png?token=21a8bcec603b72b8cdf82d49083cb3c2712da2fa&ts=1516774545

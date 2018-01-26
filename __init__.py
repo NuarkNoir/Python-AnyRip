@@ -12,7 +12,7 @@ global proxyurl
 proxyurl = ""
 
 def main():
-	url = "https://kasidesi.deviantart.com/gallery/" #input("Ok, give me your reaktor link:\n>>> ")
+	url = input("Ok, give me your reaktor link:\n>>> ")
 	if len(url) < 10:
 		print("Wrong input [", url, "]")
 		main()
