@@ -1,3 +1,7 @@
+from exts.Downloader import Downloader
+from parsers.AbstractParser import AbstractParser
+from ParsersHub import get_parser
+
 __author__ = "Andrew G aka Nuark Noir"
 __copyright__ = "Copyright 2018 Nuark Noir"
 __license__ = "Q Public License v1.0"
@@ -5,73 +9,31 @@ __maintainer__ = "Nuark Noir"
 __email__ = "mrcluster@ya.ru"
 __version__ = "0.1-dev"
 
-from ParsersHub import *
-import requests, os, urllib.parse
 
-global proxyurl
-proxyurl = ""
+def main(link, callback=None):
+    try:
+        parser = get_parser(link)
+    except Exception as e:
+        print(e)
+        return
 
-def main():
-	url = input("Ok, give me your reaktor link:\n>>> ")
-	if len(url) < 10:
-		print("Wrong input [", url, "]")
-		main()
-	try:
-		parser = parser_controller(url)
-	except Exception as e:
-		exit("\n".join(e.args))
-	pz = input("Will we use proxy redirect[y/N]?:\n>>> ").strip().lower()
-	if pz == "y":
-		globals()["proxyurl"] = "http://nuark.xyz/proxy.php?h&l="
-	print("Ok, our proxy now: [", globals()["proxyurl"], "]")
-	try:
-		parser.parse()
-	except Exception as e:
-		print("\n".join(e.args))
-		raise e
-	except KeyboardInterrupt:
-		pass
-	links = parser.get_links()
-	print("Ok, we got", parser.get_links_count(), "links")
-	act = input("What we have to do?\n[1]Nothing\n[2]Send to Yandex.Disk\n[3]Just download\n[4] Both 2 and 3\n>>> ")
-	if act == "2":
-		print("Sending links to Yandex.Disk...")
-		for link in links:
-			send_to_yandex(link)
-	elif act == "3":
-		print("Downloading...")
-		for link in links:
-			download_file(link)
-	elif act == "4":
-		print("Doing both things:")
-		for link in links:
-			print("Sending...")
-			send_to_yandex(link)
-			print("Downloading...")
-			download_file(link)
-	else:
-		exit("Nothing? Ok.")
+    assert isinstance(parser, AbstractParser)
+    assert issubclass(parser.__class__, AbstractParser)
 
-def send_to_yandex(url):
-	print("Sending", urlencode_str(url), "...")
-	url = "http://nuark-caffeine.herokuapp.com/acollection?mode=ubl&u=" + url
-	requests.get(url) 
+    if parser.std_many_once:
+        print("This parser configured to get all content at once, so it may take many time to do. Please, standby")
 
-def download_file(url):
-	filename = "./downloads/" + urlencode_str(url.split("/").pop())
-	print("Downloading", filename, "...")
-	if (os.path.isfile(filename)):
-		return
-	try:
-		with open(filename, 'wb') as out_stream:
-			req = requests.get(globals()["proxyurl"] + url, stream=True)
-			for chunk in req.iter_content(1024):
-				out_stream.write(chunk)
-	except:
-		print("Something went wrong while downloading this file:", filename)
+    def downloader_callback(x):
+        print("Downloading from callback:", x)
+        Downloader.download(x, streamy=False)
 
-def urlencode_str(string):
-	return urllib.parse.unquote(urllib.parse.unquote(string))
+    parser.parse_range_async(1, 4, inf=False, callback=callback or downloader_callback)
 
-if __name__ == "__main__":
-    main()
+
+"""
+links = ["rariaz", "twigileia", "legendguard", "ofelie"]
+for k in links:
+    main(f"https://{k}.deviantart.com/gallery/")
+"""
+
+main("http://pornreactor.cc/tag/mlp+r34", lambda x: map(print, x) if type(x) == list else print(x))
